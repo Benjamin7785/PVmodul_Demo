@@ -1,0 +1,205 @@
+/* Custom CSS for PV Module Shading Visualization */
+
+:root {
+    --primary-color: #0066cc;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+    --light-bg: #f8f9fa;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--light-bg);
+}
+
+/* Card styling */
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.card-header {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: bold;
+    border-radius: 8px 8px 0 0 !important;
+}
+
+/* Button styling */
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* Slider customization */
+.rc-slider-track {
+    background-color: var(--primary-color);
+}
+
+.rc-slider-handle {
+    border-color: var(--primary-color);
+}
+
+.rc-slider-handle:hover {
+    border-color: #0052a3;
+}
+
+/* Loading spinner */
+._dash-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+}
+
+/* Graph containers */
+.js-plotly-plot {
+    border-radius: 4px;
+}
+
+/* Info boxes */
+.info-box {
+    padding: 15px;
+    border-radius: 6px;
+    background-color: white;
+    border-left: 4px solid var(--info-color);
+    margin-bottom: 15px;
+}
+
+.warning-box {
+    padding: 15px;
+    border-radius: 6px;
+    background-color: #fff3cd;
+    border-left: 4px solid var(--warning-color);
+    margin-bottom: 15px;
+}
+
+.danger-box {
+    padding: 15px;
+    border-radius: 6px;
+    background-color: #f8d7da;
+    border-left: 4px solid var(--danger-color);
+    margin-bottom: 15px;
+}
+
+.success-box {
+    padding: 15px;
+    border-radius: 6px;
+    background-color: #d4edda;
+    border-left: 4px solid var(--success-color);
+    margin-bottom: 15px;
+}
+
+/* Tables */
+table {
+    font-size: 0.95rem;
+}
+
+thead {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Navigation */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.nav-link {
+    transition: color 0.3s;
+}
+
+.nav-link:hover {
+    color: #ffcc00 !important;
+}
+
+/* Responsive text */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 1.75rem;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+    
+    .card-header h4 {
+        font-size: 1.1rem;
+    }
+}
+
+/* Custom animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* Hot-spot indicator */
+.hotspot-indicator {
+    color: var(--danger-color);
+    font-weight: bold;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* Tooltip styling */
+.tooltip-inner {
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 0.9rem;
+}
+
+/* Code blocks */
+code {
+    background-color: #f4f4f4;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+}
+
+/* Highlight important values */
+.value-highlight {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+/* Section dividers */
+hr {
+    border-top: 2px solid #dee2e6;
+    margin: 1.5rem 0;
+}
+

@@ -1,0 +1,94 @@
+{
+  "scenarios": [
+    {
+      "id": "single_cell",
+      "name": "Einzelne verschattete Zelle",
+      "description": "Eine einzelne Halbzelle ist vollständig verschattet",
+      "shading_pattern": {
+        "string_0": [18],
+        "string_1": [],
+        "string_2": []
+      },
+      "shading_intensity": 1.0
+    },
+    {
+      "id": "two_cells_same_string",
+      "name": "Zwei Zellen im selben String",
+      "description": "Zwei benachbarte Halbzellen im selben Substring verschattet",
+      "shading_pattern": {
+        "string_0": [17, 18],
+        "string_1": [],
+        "string_2": []
+      },
+      "shading_intensity": 1.0
+    },
+    {
+      "id": "three_cells_critical",
+      "name": "Kritische Verschattung (3 Zellen)",
+      "description": "Drei Zellen verschattet - nahe der Bypass-Schwelle",
+      "shading_pattern": {
+        "string_0": [16, 17, 18],
+        "string_1": [],
+        "string_2": []
+      },
+      "shading_intensity": 1.0
+    },
+    {
+      "id": "chimney_shadow",
+      "name": "Kaminschatten",
+      "description": "Schmaler Schatten über mehrere Zellreihen",
+      "shading_pattern": {
+        "string_0": [10, 11, 12],
+        "string_1": [10, 11, 12],
+        "string_2": [10, 11, 12]
+      },
+      "shading_intensity": 0.9
+    },
+    {
+      "id": "tree_branch",
+      "name": "Baumzweig",
+      "description": "Unregelmäßige Verschattung durch Ast",
+      "shading_pattern": {
+        "string_0": [5, 6, 20, 21],
+        "string_1": [4, 5, 19, 20, 21],
+        "string_2": [6, 7]
+      },
+      "shading_intensity": 0.85
+    },
+    {
+      "id": "partial_row",
+      "name": "Teilweise Zellreihe",
+      "description": "Halbe Reihe verschattet (z.B. Dachkante)",
+      "shading_pattern": {
+        "string_0": [0, 1, 2, 3, 4, 5],
+        "string_1": [],
+        "string_2": []
+      },
+      "shading_intensity": 1.0
+    },
+    {
+      "id": "full_string",
+      "name": "Kompletter String verschattet",
+      "description": "Alle 36 Zellen eines Substrings verschattet",
+      "shading_pattern": {
+        "string_0": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35],
+        "string_1": [],
+        "string_2": []
+      },
+      "shading_intensity": 1.0
+    },
+    {
+      "id": "gradient_shading",
+      "name": "Stufenverschattung",
+      "description": "Zunehmende Verschattung über mehrere Strings",
+      "shading_pattern": {
+        "string_0": [0, 1, 2, 3, 4, 5, 6, 7, 8],
+        "string_1": [0, 1, 2, 3, 4, 5],
+        "string_2": [0, 1, 2]
+      },
+      "shading_intensity": 0.8
+    }
+  ]
+}
+
+
