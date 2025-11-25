@@ -1,0 +1,7 @@
+# Ignore LUT cache files (user-generated, too large for Git)
+*.npz
+*.json
+
+# These files are generated locally on each machine
+# Typical size: 50-200 MB
+

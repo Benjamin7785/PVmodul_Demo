@@ -4,6 +4,7 @@ Overview/landing page layout
 
 import dash_bootstrap_components as dbc
 from dash import html, dcc
+from config import MODULE_STRUCTURE
 
 
 def create_overview_layout():
@@ -78,26 +79,71 @@ def create_overview_layout():
             
             dbc.Col([
                 dbc.Card([
-                    dbc.CardHeader(html.H4("Modulkonfiguration")),
+                    dbc.CardHeader(html.H4("Modulkonfiguration", className="text-primary")),
                     dbc.CardBody([
-                        html.P([
-                            html.Strong("Typisches Modul (dieser Simulation):"),
-                            html.Br(),
-                            "• 108 Halbzellen in Serie",
-                            html.Br(),
-                            "• 3 Substrings à 36 Halbzellen",
-                            html.Br(),
-                            "• 3 Bypass-Dioden (eine pro Substring)",
-                            html.Br(),
-                            "• Nennleistung: ~350-400 Wp (bei STC)"
+                        html.Div([
+                            html.H5(MODULE_STRUCTURE['module_name'], className="text-center text-success mb-3"),
+                            html.P([
+                                html.Strong(MODULE_STRUCTURE['technology']),
+                                " - Hocheffizientes Bifazial Glass-Glass Modul"
+                            ], className="text-center text-muted"),
+                            html.P([
+                                html.Small(f"Typ: {MODULE_STRUCTURE['module_type']}")
+                            ], className="text-center text-muted"),
                         ]),
                         html.Hr(),
-                        html.H5("Wichtige Parameter:"),
+                        html.H6("Elektrische Daten (STC: 1000 W/m², 25°C, AM 1.5):"),
+                        dbc.Row([
+                            dbc.Col([
+                                html.Div([
+                                    html.Strong("P_mpp:"),
+                                    html.Span(f" {MODULE_STRUCTURE['module_specs_stc']['Pmpp']} W", className="text-primary")
+                                ]),
+                                html.Div([
+                                    html.Strong("V_mpp:"),
+                                    html.Span(f" {MODULE_STRUCTURE['module_specs_stc']['Vmpp']} V", className="text-primary")
+                                ]),
+                                html.Div([
+                                    html.Strong("I_mpp:"),
+                                    html.Span(f" {MODULE_STRUCTURE['module_specs_stc']['Impp']} A", className="text-primary")
+                                ]),
+                            ], md=6),
+                            dbc.Col([
+                                html.Div([
+                                    html.Strong("V_oc:"),
+                                    html.Span(f" {MODULE_STRUCTURE['module_specs_stc']['Voc']} V", className="text-info")
+                                ]),
+                                html.Div([
+                                    html.Strong("I_sc:"),
+                                    html.Span(f" {MODULE_STRUCTURE['module_specs_stc']['Isc']} A", className="text-info")
+                                ]),
+                                html.Div([
+                                    html.Strong("η:"),
+                                    html.Span(f" {MODULE_STRUCTURE['module_specs_stc']['efficiency']}%", className="text-success")
+                                ]),
+                            ], md=6)
+                        ]),
+                        html.Hr(),
+                        html.H6("Besondere Merkmale:"),
                         html.Ul([
-                            html.Li([html.Strong("I_sc"), ": Kurzschlussstrom ~10 A"]),
-                            html.Li([html.Strong("V_oc"), ": Leerlaufspannung ~40-45 V"]),
-                            html.Li([html.Strong("V_br"), ": Breakdown-Spannung ~12 V pro Zelle"]),
-                            html.Li([html.Strong("V_f,BD"), ": Bypass-Durchlassspannung ~0.4 V"])
+                            html.Li([
+                                "Bifazialität: ",
+                                html.Strong(f"{int(MODULE_STRUCTURE['bifacial']['bifaciality_factor']*100)}%"),
+                                f" (bis zu +{MODULE_STRUCTURE['bifacial']['backside_gain_typical']}W Rückseitengewinn)"
+                            ]),
+                            html.Li([
+                                "Temperaturkoeffizient: ",
+                                html.Strong("-0.26%/K"),
+                                " (besser als konventionelle Module)"
+                            ]),
+                        ]),
+                        html.Hr(),
+                        html.H6("Modulaufbau:"),
+                        html.Ul([
+                            html.Li(f"{MODULE_STRUCTURE['total_cells']} Halbzellen (6 × 18 Layout)"),
+                            html.Li(f"{MODULE_STRUCTURE['num_strings']} Substrings à {MODULE_STRUCTURE['cells_per_string']} Zellen"),
+                            html.Li(f"{MODULE_STRUCTURE['bypass_diodes']} Schottky-Bypass-Dioden"),
+                            html.Li("V_f,BD ≈ 0,4 V (Bypass-Durchlassspannung)")
                         ])
                     ])
                 ], className="mb-4")

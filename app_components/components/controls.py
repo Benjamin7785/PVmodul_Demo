@@ -27,34 +27,39 @@ def create_parameter_controls():
                 step=50,
                 value=1000,
                 marks={i: str(i) for i in range(200, 1001, 200)},
-                tooltip={"placement": "bottom", "always_visible": True}
+                tooltip={"placement": "bottom", "always_visible": True},
+                updatemode='mouseup'  # OPTIMIZED: Update nur beim Loslassen
             ),
             html.Br(),
             
-            # Temperature
+            # Temperature (erweitert: -20°C bis +90°C für Winter/Sommer)
             html.Label("Temperatur (°C):"),
+            html.Small("Winter bis Sommer: -20°C bis +90°C", className="text-muted d-block mb-1"),
             dcc.Slider(
                 id='temperature-slider',
-                min=25,
-                max=85,
+                min=-20,
+                max=90,
                 step=5,
                 value=25,
-                marks={i: str(i) for i in range(25, 86, 15)},
-                tooltip={"placement": "bottom", "always_visible": True}
+                marks={
+                    -20: '-20°',
+                    0: '0°',
+                    25: '25° (STC)',
+                    45: '45° (NOCT)',
+                    70: '70°',
+                    90: '90°'
+                },
+                tooltip={"placement": "bottom", "always_visible": True},
+                updatemode='mouseup'  # OPTIMIZED: Update nur beim Loslassen
             ),
             html.Br(),
-            
-            # Operating current
-            html.Label("Betriebsstrom (A):"),
-            dcc.Slider(
-                id='current-slider',
-                min=0,
-                max=10,
-                step=0.1,
-                value=5.0,
-                marks={i: str(i) for i in range(0, 11, 2)},
-                tooltip={"placement": "bottom", "always_visible": True}
-            ),
+            html.Hr(),
+            html.Small([
+                "ℹ️ ", 
+                html.Strong("Physikalische Kopplung:"), 
+                " Der maximale Strom wird automatisch aus der Einstrahlung berechnet: ",
+                html.Code("I_max = (G/1000) × I_sc")
+            ], className="text-info"),
         ])
     ], className="mb-3")
 
@@ -79,7 +84,8 @@ def create_shading_controls():
                 step=1,
                 value=0,
                 marks={i: str(i) for i in range(0, 11, 2)},
-                tooltip={"placement": "bottom", "always_visible": True}
+                tooltip={"placement": "bottom", "always_visible": True},
+                updatemode='mouseup'  # OPTIMIZED: Update nur beim Loslassen
             ),
             html.Br(),
             
@@ -91,7 +97,8 @@ def create_shading_controls():
                 step=1,
                 value=0,
                 marks={i: str(i) for i in range(0, 11, 2)},
-                tooltip={"placement": "bottom", "always_visible": True}
+                tooltip={"placement": "bottom", "always_visible": True},
+                updatemode='mouseup'  # OPTIMIZED: Update nur beim Loslassen
             ),
             html.Br(),
             
@@ -103,7 +110,8 @@ def create_shading_controls():
                 step=1,
                 value=0,
                 marks={i: str(i) for i in range(0, 11, 2)},
-                tooltip={"placement": "bottom", "always_visible": True}
+                tooltip={"placement": "bottom", "always_visible": True},
+                updatemode='mouseup'  # OPTIMIZED: Update nur beim Loslassen
             ),
             html.Br(),
             
@@ -115,7 +123,8 @@ def create_shading_controls():
                 step=0.1,
                 value=1.0,
                 marks={i/10: f"{i*10}%" for i in range(0, 11, 2)},
-                tooltip={"placement": "bottom", "always_visible": True}
+                tooltip={"placement": "bottom", "always_visible": True},
+                updatemode='mouseup'  # OPTIMIZED: Update nur beim Loslassen
             ),
             html.Br(),
             
@@ -179,7 +188,29 @@ def create_physics_controls():
                 step=0.5,
                 value=-12,
                 marks={i: str(i) for i in range(-20, 1, 5)},
-                tooltip={"placement": "bottom", "always_visible": True}
+                tooltip={"placement": "bottom", "always_visible": True},
+                updatemode='mouseup'  # OPTIMIZED: Update nur beim Loslassen
+            ),
+            html.Br(),
+            
+            html.Label("Temperatur (°C):"),
+            html.Small("Einfluss auf Breakdown-Spannung", className="text-muted d-block mb-1"),
+            dcc.Slider(
+                id='temperature-slider',
+                min=-20,
+                max=90,
+                step=5,
+                value=25,
+                marks={
+                    -20: '-20°',
+                    0: '0°',
+                    25: '25° (STC)',
+                    45: '45° (NOCT)',
+                    70: '70°',
+                    90: '90°'
+                },
+                tooltip={"placement": "bottom", "always_visible": True},
+                updatemode='mouseup'  # OPTIMIZED: Update nur beim Loslassen
             ),
             html.Br(),
             
@@ -191,7 +222,8 @@ def create_physics_controls():
                 step=0.5,
                 value=16,
                 marks={i: f"10^{i}" for i in range(15, 20)},
-                tooltip={"placement": "bottom", "always_visible": True}
+                tooltip={"placement": "bottom", "always_visible": True},
+                updatemode='mouseup'  # OPTIMIZED: Update nur beim Loslassen
             ),
             html.Br(),
             

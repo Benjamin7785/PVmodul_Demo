@@ -3,7 +3,7 @@ Cell string model with bypass diode logic
 """
 
 import numpy as np
-from .cell_model import SolarCell
+from .cell_model import SolarCell, LUTSolarCell
 from config import BYPASS_DIODE, MODULE_STRUCTURE
 
 
@@ -12,7 +12,7 @@ class CellString:
     Models a string of solar cells in series with a bypass diode
     """
     
-    def __init__(self, num_cells=36, irradiance=1000, temperature=25, shading_pattern=None):
+    def __init__(self, num_cells=36, irradiance=1000, temperature=25, shading_pattern=None, use_lut=True):
         """
         Initialize cell string
         
@@ -27,10 +27,16 @@ class CellString:
         shading_pattern : dict or None
             Dictionary mapping cell index to shading factor
             e.g., {5: 0.8, 6: 1.0} means cell 5 is 80% shaded, cell 6 is 100% shaded
+        use_lut : bool
+            Use LUT-based cells for speed (default True)
         """
         self.num_cells = num_cells
         self.irradiance = irradiance
         self.temperature = temperature
+        self.use_lut = use_lut
+        
+        # Create cells (LUT-based if available, otherwise standard)
+        CellClass = LUTSolarCell if use_lut else SolarCell
         
         # Initialize cells
         self.cells = []
@@ -40,7 +46,7 @@ class CellString:
             if shading_pattern and i in shading_pattern:
                 shading_factor = shading_pattern[i]
             
-            cell = SolarCell(
+            cell = CellClass(
                 irradiance=irradiance,
                 temperature=temperature,
                 shading_factor=shading_factor
@@ -193,9 +199,21 @@ class CellString:
             'powers': currents * np.array(voltages)
         }
     
-    def find_mpp(self):
-        """Find maximum power point of string"""
-        iv_data = self.iv_curve(points=300)
+    def find_mpp(self, fast=True):
+        """
+        Find maximum power point of string
+        
+        Parameters:
+        -----------
+        fast : bool
+            If True, uses fewer points for faster calculation
+        """
+        # OPTIMIZED: VERY few points for speed
+        if fast:
+            iv_data = self.iv_curve(points=30)  # 30 points: minimum for accuracy
+        else:
+            iv_data = self.iv_curve(points=100)
+        
         powers = iv_data['powers']
         idx_mpp = np.argmax(powers)
         

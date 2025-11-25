@@ -27,16 +27,29 @@ def create_voltage_distribution_layout():
                 dbc.Card([
                     dbc.CardHeader(html.H5("Betriebspunkt")),
                     dbc.CardBody([
-                        html.Label("Betriebsstrom (A):"),
+                        html.Label("Verschattungsgrad (%):"),
+                        html.Small([
+                            "Wie stark sind die im Szenario definierten Zellen verschattet?",
+                            html.Br(),
+                            "0% = volle Sonne | 50% = halbe Bedeckung | 100% = vollständig verschattet"
+                        ], className="text-muted d-block mb-2"),
                         dcc.Slider(
-                            id='operating-current-slider',
+                            id='operating-current-slider',  # Keep ID for compatibility
                             min=0,
-                            max=10,
-                            step=0.1,
-                            value=5.0,
-                            marks={i: str(i) for i in range(0, 11, 2)},
-                            tooltip={"placement": "bottom", "always_visible": True}
+                            max=100,  # Verschattungsgrad in %
+                            step=5,
+                            value=100,  # Default: vollständige Verschattung
+                            marks={
+                                0: '0%',
+                                25: '25%',
+                                50: '50%',
+                                75: '75%',
+                                100: '100%'
+                            },
+                            tooltip={"placement": "bottom", "always_visible": True},
+                            updatemode='drag'  # OPTIMIZED: Update während Drag (smoother)
                         ),
+                        html.Div(id='shading-intensity-info', className="mt-2 alert alert-info", style={'fontSize': '0.85em', 'padding': '8px'}),
                         html.Hr(),
                         html.Div(id='operating-point-info')
                     ])
@@ -55,6 +68,60 @@ def create_voltage_distribution_layout():
                             value=['show_values', 'highlight_hotspots', 'show_bypass'],
                             inline=False
                         )
+                    ])
+                ], className="mb-3"),
+                
+                dbc.Card([
+                    dbc.CardHeader(html.H5("ℹ️ Verschattungsgrad-Steuerung")),
+                    dbc.CardBody([
+                        html.P([
+                            html.Strong("Wie funktioniert es?"),
+                            html.Br(),
+                            "1. ", html.Strong("Szenario wählen"), ": Definiert WO verschattet wird",
+                            html.Br(),
+                            "2. ", html.Strong("Verschattungsgrad"), ": Definiert WIE STARK verschattet wird",
+                        ]),
+                        html.Hr(),
+                        html.P([
+                            html.Strong("Beispiel: "), "\"Einzelne verschattete Zelle\"",
+                            html.Br(),
+                            "• 0%: Zelle voll belichtet (keine Verschattung)",
+                            html.Br(),
+                            "• 50%: Zelle halb bedeckt (kleines Blatt)",
+                            html.Br(),
+                            "• 100%: Zelle komplett bedeckt (vollständiger Schatten)"
+                        ]),
+                        html.Hr(),
+                        html.Small([
+                            html.Strong("Betriebspunkt: "),
+                            "Wird automatisch am MPP berechnet.",
+                            html.Br(),
+                            html.Strong("Farbcodierung: "),
+                            "🟢 Normal | 🟠 Kritisch | 🔴 Bypass aktiv"
+                        ], className="text-muted")
+                    ])
+                ], className="mb-3"),
+                
+                dbc.Card([
+                    dbc.CardHeader(html.H5("ℹ️ String-Spannungen")),
+                    dbc.CardBody([
+                        html.P([
+                            html.Strong("Farbcodierung:"),
+                            html.Br(),
+                            "🟢 ", html.Span("Normal", className="text-success"), " (V > 0)",
+                            html.Br(),
+                            "🟠 ", html.Span("Kritisch", className="text-warning"), " (-0,4V < V < 0)",
+                            html.Br(),
+                            "🔴 ", html.Span("Bypass aktiv", className="text-danger"), " (V < -0,4V)",
+                        ], style={'fontSize': '0.9em'}),
+                        html.Hr(),
+                        html.Small([
+                            html.Strong("Bypass-Schwelle: "),
+                            "Die Bypass-Diode schaltet, wenn die ",
+                            html.Strong("String-Spannung unter -0,4V"),
+                            " fällt. Dies passiert, wenn verschattete Zellen in Reverse-Bias ",
+                            "(negative Spannung) gehen."
+                        ], className="text-muted")
                     ])
                 ])
             ], md=3),

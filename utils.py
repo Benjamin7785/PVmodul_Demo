@@ -46,14 +46,17 @@ def get_scenario_by_id(scenario_id):
     return None
 
 
-def convert_scenario_to_shading_config(scenario):
+def convert_scenario_to_shading_config(scenario, intensity_override=None):
     """
     Convert scenario format to shading configuration for module
     
     Parameters:
     -----------
     scenario : dict
-        Scenario data
+        Scenario data (defines WHICH cells are shaded)
+    intensity_override : float or None
+        If provided, overrides the scenario's default intensity (0.0-1.0)
+        Allows dynamic control of HOW MUCH cells are shaded
         
     Returns:
     --------
@@ -64,7 +67,12 @@ def convert_scenario_to_shading_config(scenario):
         return None
     
     shading_pattern = scenario['shading_pattern']
-    shading_intensity = scenario.get('shading_intensity', 1.0)
+    
+    # Use override if provided, otherwise use scenario's default intensity
+    if intensity_override is not None:
+        shading_intensity = intensity_override
+    else:
+        shading_intensity = scenario.get('shading_intensity', 1.0)
     
     # Convert list indices to dict with intensity
     config = {}

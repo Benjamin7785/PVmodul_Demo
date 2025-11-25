@@ -24,40 +24,31 @@ def create_power_dissipation_heatmap(module, current):
     hotspot_analysis = module.analyze_hotspots(current)
     voltage_map = module.get_cell_voltage_map(current)
     
-    # Create 2D array of power dissipation
-    cells_per_row = 12
-    num_rows = module.cells_per_string // cells_per_row
+    # Create 2D array of power dissipation (Realistic: 6 columns × 18 rows total)
+    columns_per_string = 2  # 2 Spalten pro String
+    rows_per_string = 18  # 18 Reihen pro String
     
-    # Initialize power array
-    power_array = []
-    cell_labels = []
+    # Initialize power array (6 columns × 18 rows)
+    power_matrix = np.zeros((rows_per_string, 6))
+    label_matrix = np.empty((rows_per_string, 6), dtype=object)
     
     for string_idx in range(module.num_strings):
-        string_powers = []
-        string_labels = []
+        col_offset = string_idx * columns_per_string
         
         for cell_idx in range(module.cells_per_string):
             V_cell = voltage_map['cell_voltages'][string_idx][cell_idx]
             
             if V_cell < 0:
-                # Reverse bias - dissipating power
                 power = -V_cell * current
             else:
                 power = 0.0
             
-            string_powers.append(power)
-            string_labels.append(f"S{string_idx+1}C{cell_idx}<br>{power:.2f}W")
-        
-        # Reshape to 2D grid
-        power_grid = np.array(string_powers).reshape(num_rows, cells_per_row)
-        label_grid = np.array(string_labels).reshape(num_rows, cells_per_row)
-        
-        power_array.append(power_grid)
-        cell_labels.append(label_grid)
-    
-    # Concatenate strings vertically
-    power_matrix = np.vstack(power_array)
-    label_matrix = np.vstack(cell_labels)
+            # Position in module grid
+            row = cell_idx // columns_per_string
+            col = col_offset + (cell_idx % columns_per_string)
+            
+            power_matrix[row, col] = power
+            label_matrix[row, col] = f"S{string_idx+1}C{cell_idx}<br>{power:.2f}W"
     
     fig = go.Figure(data=go.Heatmap(
         z=power_matrix,
@@ -71,10 +62,10 @@ def create_power_dissipation_heatmap(module, current):
     
     fig.update_layout(
         title=f"Leistungsdissipation bei I = {current:.2f} A<br>Gesamt Hot-Spot-Leistung: {hotspot_analysis['total_hotspot_power']:.2f} W",
-        xaxis=dict(title="Zellposition (horizontal)", showgrid=False),
-        yaxis=dict(title="String / Zellreihe", showgrid=False),
-        height=600,
-        width=1000
+        xaxis=dict(title="Spalten (6 total: S1|S2|S3)", showgrid=False),
+        yaxis=dict(title="Reihen (18)", showgrid=False),
+        height=600,  # Angepasst für Halbzellen-Proportion
+        width=400
     )
     
     return fig
@@ -97,27 +88,23 @@ def create_voltage_heatmap(module, current):
     """
     voltage_map = module.get_cell_voltage_map(current)
     
-    # Create 2D array of voltages
-    cells_per_row = 12
-    num_rows = module.cells_per_string // cells_per_row
+    # Create 2D array of voltages (Realistic: 6 columns × 18 rows)
+    columns_per_string = 2
+    rows_per_string = 18
     
-    voltage_array = []
-    cell_labels = []
+    voltage_matrix = np.zeros((rows_per_string, 6))
+    label_matrix = np.empty((rows_per_string, 6), dtype=object)
     
     for string_idx in range(module.num_strings):
+        col_offset = string_idx * columns_per_string
         voltages = voltage_map['cell_voltages'][string_idx]
         
-        # Reshape to 2D grid
-        voltage_grid = np.array(voltages).reshape(num_rows, cells_per_row)
-        label_grid = np.array([f"S{string_idx+1}C{i}<br>{v:.3f}V" 
-                               for i, v in enumerate(voltages)]).reshape(num_rows, cells_per_row)
-        
-        voltage_array.append(voltage_grid)
-        cell_labels.append(label_grid)
-    
-    # Concatenate strings vertically
-    voltage_matrix = np.vstack(voltage_array)
-    label_matrix = np.vstack(cell_labels)
+        for cell_idx, V_cell in enumerate(voltages):
+            row = cell_idx // columns_per_string
+            col = col_offset + (cell_idx % columns_per_string)
+            
+            voltage_matrix[row, col] = V_cell
+            label_matrix[row, col] = f"S{string_idx+1}C{cell_idx}<br>{V_cell:.3f}V"
     
     # Custom colorscale: red for negative (reverse bias), green for positive
     colorscale = [
@@ -141,10 +128,10 @@ def create_voltage_heatmap(module, current):
     
     fig.update_layout(
         title=f"Spannungsverteilung bei I = {current:.2f} A",
-        xaxis=dict(title="Zellposition (horizontal)", showgrid=False),
-        yaxis=dict(title="String / Zellreihe", showgrid=False),
-        height=600,
-        width=1000
+        xaxis=dict(title="Spalten (6 total: S1|S2|S3)", showgrid=False),
+        yaxis=dict(title="Reihen (18)", showgrid=False),
+        height=600,  # Angepasst für Halbzellen-Proportion
+        width=400
     )
     
     return fig
@@ -169,31 +156,29 @@ def create_temperature_distribution_3d(module, current, ambient_temp=25):
     """
     voltage_map = module.get_cell_voltage_map(current)
     
-    cells_per_row = 12
-    num_rows = module.cells_per_string // cells_per_row
+    columns_per_string = 2
+    rows_per_string = 18
     
     # Estimate temperature rise from power dissipation
     # Simple model: Delta_T = P * R_th
     R_th = 5  # °C/W thermal resistance (simplified)
     
-    temp_array = []
+    temp_matrix = np.zeros((rows_per_string, 6))
     
     for string_idx in range(module.num_strings):
+        col_offset = string_idx * columns_per_string
         voltages = voltage_map['cell_voltages'][string_idx]
         
-        temps = []
-        for V_cell in voltages:
+        for cell_idx, V_cell in enumerate(voltages):
             if V_cell < 0:
                 power = -V_cell * current
                 temp = ambient_temp + power * R_th
             else:
-                temp = ambient_temp + 2  # Small increase from normal operation
-            temps.append(temp)
-        
-        temp_grid = np.array(temps).reshape(num_rows, cells_per_row)
-        temp_array.append(temp_grid)
-    
-    temp_matrix = np.vstack(temp_array)
+                temp = ambient_temp + 2
+            
+            row = cell_idx // columns_per_string
+            col = col_offset + (cell_idx % columns_per_string)
+            temp_matrix[row, col] = temp
     
     # Create coordinate grids
     x = np.arange(cells_per_row)
@@ -233,17 +218,18 @@ def create_shading_pattern_heatmap(module):
     --------
     plotly.graph_objects.Figure
     """
-    cells_per_row = 12
-    num_rows = module.cells_per_string // cells_per_row
+    columns_per_string = 2
+    rows_per_string = 18
     
-    shading_array = []
+    shading_matrix = np.zeros((rows_per_string, 6))
     
     for string_idx in range(module.num_strings):
-        shading_factors = [cell.shading_factor for cell in module.strings[string_idx].cells]
-        shading_grid = np.array(shading_factors).reshape(num_rows, cells_per_row)
-        shading_array.append(shading_grid)
-    
-    shading_matrix = np.vstack(shading_array)
+        col_offset = string_idx * columns_per_string
+        
+        for cell_idx, cell in enumerate(module.strings[string_idx].cells):
+            row = cell_idx // columns_per_string
+            col = col_offset + (cell_idx % columns_per_string)
+            shading_matrix[row, col] = cell.shading_factor
     
     fig = go.Figure(data=go.Heatmap(
         z=shading_matrix * 100,  # Convert to percentage
@@ -254,10 +240,10 @@ def create_shading_pattern_heatmap(module):
     
     fig.update_layout(
         title="Verschattungsmuster",
-        xaxis=dict(title="Zellposition", showgrid=False),
-        yaxis=dict(title="String / Reihe", showgrid=False),
-        height=500,
-        width=900
+        xaxis=dict(title="Spalten (6 total: S1|S2|S3)", showgrid=False),
+        yaxis=dict(title="Reihen (18)", showgrid=False),
+        height=600,  # Angepasst für Halbzellen-Proportion
+        width=400
     )
     
     return fig

@@ -13,7 +13,7 @@ class PVModule:
     Typical configuration: 108 half-cells divided into 3 strings of 36 cells each
     """
     
-    def __init__(self, irradiance=1000, temperature=25, shading_config=None):
+    def __init__(self, irradiance=1000, temperature=25, shading_config=None, use_lut=True):
         """
         Initialize PV module
         
@@ -30,12 +30,15 @@ class PVModule:
                 'string_1': {cell_index: shading_factor, ...},
                 'string_2': {cell_index: shading_factor, ...}
             }
+        use_lut : bool
+            Use LUT-based cells for speed (default True)
         """
         self.irradiance = irradiance
         self.temperature = temperature
         self.num_strings = MODULE_STRUCTURE['num_strings']
         self.cells_per_string = MODULE_STRUCTURE['cells_per_string']
         self.total_cells = MODULE_STRUCTURE['total_cells']
+        self.use_lut = use_lut
         
         # Initialize shading configuration
         if shading_config is None:
@@ -51,7 +54,8 @@ class PVModule:
                 num_cells=self.cells_per_string,
                 irradiance=irradiance,
                 temperature=temperature,
-                shading_pattern=shading_pattern
+                shading_pattern=shading_pattern,
+                use_lut=use_lut
             )
             self.strings.append(string)
     
@@ -116,13 +120,15 @@ class PVModule:
             }
         """
         if current_range is None:
-            # Default: 0 to Isc of least shaded string
+            # Default: 0 to Isc (should not exceed module Isc!)
+            # Module Isc is determined by the MINIMUM string Isc (series connection)
             Isc_values = []
             for string in self.strings:
                 # Get Isc of string (minimum of all cells in string)
                 Isc = min([cell.get_Isc() for cell in string.cells])
                 Isc_values.append(Isc)
-            I_max = max(Isc_values) * 1.1
+            # FIXED: Use MINIMUM Isc (series constraint), not maximum!
+            I_max = min(Isc_values) * 1.05  # Small margin for safety
             current_range = (0, I_max)
         
         currents = np.linspace(current_range[0], current_range[1], points)
@@ -143,16 +149,26 @@ class PVModule:
             'bypass_states': np.array(bypass_states_all)
         }
     
-    def find_mpp(self):
+    def find_mpp(self, fast=True):
         """
         Find maximum power point
+        
+        Parameters:
+        -----------
+        fast : bool
+            If True, uses fast method with fewer points (default)
+            If False, uses accurate method with more points
         
         Returns:
         --------
         dict
             {'voltage': V_mpp, 'current': I_mpp, 'power': P_mpp, 'details': ...}
         """
-        iv_data = self.iv_curve(points=400)
+        # OPTIMIZED: VERY few points for speed
+        if fast:
+            iv_data = self.iv_curve(points=30)  # 30 points: minimum for accuracy
+        else:
+            iv_data = self.iv_curve(points=100)
         
         # Find MPP
         idx_mpp = np.argmax(iv_data['powers'])
