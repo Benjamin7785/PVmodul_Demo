@@ -248,66 +248,112 @@ function createCircuitDiagram(cellVoltages, moduleState, current, displayOptions
 }
 
 /**
- * Create voltage heatmap
+ * Create voltage heatmap (WebGL-accelerated)
  */
 function createVoltageHeatmap(cellVoltages) {
-    // Reshape to 6x18 grid
-    const voltageGrid = [];
-    for (let row = 0; row < 18; row++) {
-        voltageGrid[row] = [];
-        for (let col = 0; col < 6; col++) {
-            const cellIdx = col * 18 + row;
-            voltageGrid[row][col] = cellVoltages[cellIdx];
+    // Check if WebGL heatmap renderer is available
+    if (typeof window.WebGLHeatmap !== 'undefined' && window.webglVoltageHeatmap) {
+        // Use WebGL renderer (GPU-accelerated, 60 FPS)
+        window.webglVoltageHeatmap.render(cellVoltages);
+        
+        // Return placeholder Plotly figure (WebGL renders to canvas separately)
+        return {
+            data: [],
+            layout: {
+                title: 'Cell Voltage Distribution (WebGL)',
+                annotations: [{
+                    text: 'Rendered with WebGL (GPU)',
+                    xref: 'paper',
+                    yref: 'paper',
+                    x: 0.5,
+                    y: 0.5,
+                    showarrow: false
+                }],
+                height: 400
+            }
+        };
+    } else {
+        // Fallback to Plotly heatmap
+        const voltageGrid = [];
+        for (let row = 0; row < 18; row++) {
+            voltageGrid[row] = [];
+            for (let col = 0; col < 6; col++) {
+                const cellIdx = col * 18 + row;
+                voltageGrid[row][col] = cellVoltages[cellIdx];
+            }
         }
+        
+        return {
+            data: [{
+                z: voltageGrid,
+                type: 'heatmap',
+                colorscale: 'RdYlGn',
+                reversescale: false,
+                colorbar: {title: 'V'},
+                hovertemplate: 'Voltage: %{z:.3f} V<extra></extra>'
+            }],
+            layout: {
+                title: 'Cell Voltage Distribution',
+                xaxis: {title: 'Column'},
+                yaxis: {title: 'Row', autorange: 'reversed'},
+                height: 400
+            }
+        };
     }
-    
-    return {
-        data: [{
-            z: voltageGrid,
-            type: 'heatmap',
-            colorscale: 'RdYlGn',
-            reversescale: false,
-            colorbar: {title: 'V'},
-            hovertemplate: 'Voltage: %{z:.3f} V<extra></extra>'
-        }],
-        layout: {
-            title: 'Cell Voltage Distribution',
-            xaxis: {title: 'Column'},
-            yaxis: {title: 'Row', autorange: 'reversed'},
-            height: 400
-        }
-    };
 }
 
 /**
- * Create power dissipation heatmap
+ * Create power dissipation heatmap (WebGL-accelerated)
  */
 function createPowerHeatmap(cellPowers) {
-    // Reshape to 6x18 grid
-    const powerGrid = [];
-    for (let row = 0; row < 18; row++) {
-        powerGrid[row] = [];
-        for (let col = 0; col < 6; col++) {
-            const cellIdx = col * 18 + row;
-            powerGrid[row][col] = cellPowers[cellIdx];
+    // Check if WebGL heatmap renderer is available
+    if (typeof window.WebGLHeatmap !== 'undefined' && window.webglPowerHeatmap) {
+        // Use WebGL renderer (GPU-accelerated, 60 FPS)
+        window.webglPowerHeatmap.render(cellPowers);
+        
+        // Return placeholder Plotly figure
+        return {
+            data: [],
+            layout: {
+                title: 'Power Dissipation (WebGL)',
+                annotations: [{
+                    text: 'Rendered with WebGL (GPU)',
+                    xref: 'paper',
+                    yref: 'paper',
+                    x: 0.5,
+                    y: 0.5,
+                    showarrow: false
+                }],
+                height: 400
+            }
+        };
+    } else {
+        // Fallback to Plotly heatmap
+        const powerGrid = [];
+        for (let row = 0; row < 18; row++) {
+            powerGrid[row] = [];
+            for (let col = 0; col < 6; col++) {
+                const cellIdx = col * 18 + row;
+                powerGrid[row][col] = cellPowers[cellIdx];
+            }
         }
+        
+        return {
+            data: [{
+                z: powerGrid,
+                type: 'heatmap',
+                colorscale: 'Reds',
+                colorbar: {title: 'W'},
+                hovertemplate: 'Power: %{z:.2f} W<extra></extra>'
+            }],
+            layout: {
+                title: 'Power Dissipation',
+                xaxis: {title: 'Column'},
+                yaxis: {title: 'Row', autorange: 'reversed'},
+                height: 400
+            }
+        };
     }
-    
-    return {
-        data: [{
-            z: powerGrid,
-            type: 'heatmap',
-            colorscale: 'Reds',
-            colorbar: {title: 'W'},
-            hovertemplate: 'Power: %{z:.2f} W<extra></extra>'
-        }],
-        layout: {
-            title: 'Power Dissipation',
-            xaxis: {title: 'Column'},
-            yaxis: {title: 'Row', autorange: 'reversed'},
-            height: 400
-        }
-    };
 }
 
 /**
@@ -454,6 +500,20 @@ function formatShadingInfo(percent, intensity, cellShading, current, mpp) {
         namespace: 'dash_html_components'
     };
 }
+
+// Initialize WebGL heatmap renderers when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if canvas elements exist
+    if (document.getElementById('webgl-voltage-canvas')) {
+        window.webglVoltageHeatmap = new window.WebGLHeatmap('webgl-voltage-canvas', 600, 1800);
+        console.log('[OK] WebGL Voltage Heatmap initialized');
+    }
+    
+    if (document.getElementById('webgl-power-canvas')) {
+        window.webglPowerHeatmap = new window.WebGLHeatmap('webgl-power-canvas', 600, 1800);
+        console.log('[OK] WebGL Power Heatmap initialized');
+    }
+});
 
 console.log("[OK] Client-side callbacks module loaded!");
 

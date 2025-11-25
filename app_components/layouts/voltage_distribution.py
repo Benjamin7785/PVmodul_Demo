@@ -142,12 +142,30 @@ def create_voltage_distribution_layout():
                 dbc.Row([
                     dbc.Col([
                         dbc.Card([
-                            dbc.CardHeader(html.H5("Spannungs-Heatmap")),
+                            dbc.CardHeader(html.H5("Spannungs-Heatmap (WebGL GPU-Accelerated)")),
                             dbc.CardBody([
-                                dcc.Loading(
-                                    id="loading-voltage-heatmap",
-                                    type="default",
-                                    children=dcc.Graph(id='voltage-heatmap')
+                                # WebGL canvas for GPU rendering (Phase 2)
+                                html.Canvas(
+                                    id='webgl-voltage-canvas',
+                                    style={
+                                        'width': '100%',
+                                        'maxWidth': '600px',
+                                        'border': '1px solid #ddd',
+                                        'borderRadius': '5px',
+                                        'display': 'block',
+                                        'margin': '0 auto'
+                                    }
+                                ),
+                                # Fallback Plotly graph (hidden when WebGL active)
+                                html.Div(
+                                    dcc.Loading(
+                                        id="loading-voltage-heatmap",
+                                        type="default",
+                                        children=dcc.Graph(
+                                            id='voltage-heatmap',
+                                            style={'display': 'none'}  # WebGL renders instead
+                                        )
+                                    )
                                 )
                             ])
                         ])
@@ -155,12 +173,30 @@ def create_voltage_distribution_layout():
                     
                     dbc.Col([
                         dbc.Card([
-                            dbc.CardHeader(html.H5("Leistungsdissipation")),
+                            dbc.CardHeader(html.H5("Leistungsdissipation (WebGL GPU-Accelerated)")),
                             dbc.CardBody([
-                                dcc.Loading(
-                                    id="loading-power-heatmap",
-                                    type="default",
-                                    children=dcc.Graph(id='power-dissipation-heatmap')
+                                # WebGL canvas for GPU rendering
+                                html.Canvas(
+                                    id='webgl-power-canvas',
+                                    style={
+                                        'width': '100%',
+                                        'maxWidth': '600px',
+                                        'border': '1px solid #ddd',
+                                        'borderRadius': '5px',
+                                        'display': 'block',
+                                        'margin': '0 auto'
+                                    }
+                                ),
+                                # Fallback Plotly graph
+                                html.Div(
+                                    dcc.Loading(
+                                        id="loading-power-heatmap",
+                                        type="default",
+                                        children=dcc.Graph(
+                                            id='power-dissipation-heatmap',
+                                            style={'display': 'none'}  # WebGL renders instead
+                                        )
+                                    )
                                 )
                             ])
                         ])
