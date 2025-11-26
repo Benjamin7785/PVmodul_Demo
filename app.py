@@ -178,7 +178,7 @@ def export_lut_to_client(n):
             print("[WARN] LUT cache not found, client-side mode unavailable")
             return None
         
-        lut_data, _ = load_lut(LUT_CACHE_FILE)
+        lut_data = load_lut(LUT_CACHE_FILE)  # FIX: load_lut() returns only one value
         
         # Flatten 4D voltage array to 1D for JSON serialization
         # JavaScript will reconstruct the 4D structure
