@@ -431,7 +431,7 @@ function formatOperatingPointInfo(moduleState, current, mpp) {
                     namespace: 'dash_html_components'
                 },
                 {
-                    props: {children: ''},
+                    props: {},  // FIX: Br elements must not have children
                     type: 'Br',
                     namespace: 'dash_html_components'
                 },
@@ -477,7 +477,7 @@ function formatShadingInfo(percent, intensity, cellShading, current, mpp) {
                     namespace: 'dash_html_components'
                 },
                 {
-                    props: {children: ''},
+                    props: {},  // FIX: Br elements must not have children
                     type: 'Br',
                     namespace: 'dash_html_components'
                 },
