@@ -289,11 +289,23 @@ class ClientSideModule {
             const current = (maxCurrent * i) / numPoints;
             const result = this.calculateVoltage(current);
             
-            if (result.power > maxPower) {
+            // Handle NaN and invalid values
+            if (!isNaN(result.power) && !isNaN(result.voltage) && result.power > maxPower) {
                 maxPower = result.power;
                 mppCurrent = current;
                 mppVoltage = result.voltage;
             }
+        }
+        
+        // FIX: If no valid MPP found, return safe defaults
+        if (maxPower === 0 || isNaN(mppVoltage)) {
+            // Calculate open-circuit voltage for unshaded module at current conditions
+            const result = this.calculateVoltage(0);
+            return {
+                current: 0,
+                voltage: isNaN(result.voltage) ? 0 : result.voltage,
+                power: 0
+            };
         }
         
         return {
@@ -327,8 +339,11 @@ function applyShadingScenario(scenarioId, intensity, interpolator, irradiance, t
             let shadingFactor = 0.0;
             
             // Apply shading based on scenario
-            // This is a simplified version - full logic would match Python scenarios
-            if (scenarioId === 'single_cell') {
+            // Handle 'none' scenario explicitly (no shading)
+            if (scenarioId === 'none' || !scenarioId) {
+                // No shading - all cells fully illuminated
+                shadingFactor = 0.0;
+            } else if (scenarioId === 'single_cell') {
                 // Shade one cell in first string
                 if (s === 0 && c === 17) shadingFactor = intensity;
             } else if (scenarioId === 'partial_string') {
