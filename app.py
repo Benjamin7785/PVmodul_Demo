@@ -144,8 +144,11 @@ navbar = dbc.NavbarSimple(
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
     
-    # NOTE: LUT data is now fetched via Flask API (/api/lut) instead of dcc.Store
-    # This avoids Dash callback circular dependencies and improves reliability
+    # Store for LUT data (populated by server-side callback on page load)
+    dcc.Store(id='lut-data-export', data=None),
+    
+    # Interval to trigger LUT export (runs once after page load)
+    dcc.Interval(id='lut-export-trigger', interval=500, n_intervals=0, max_intervals=1),
     
     navbar,
     html.Div(id='page-content')
@@ -222,6 +225,53 @@ def display_page(pathname):
         return create_scenarios_layout()
     else:
         return create_overview_layout()
+
+
+# LUT export callback (populates store for client-side callbacks)
+@app.callback(
+    Output('lut-data-export', 'data'),
+    Input('lut-export-trigger', 'n_intervals'),
+    prevent_initial_call=False
+)
+def export_lut_to_client(n):
+    """
+    Export LUT data to client via dcc.Store
+    This triggers once after page load to populate the client-side interpolator
+    """
+    print("[EXPORT] Server-side LUT export callback triggered")
+    
+    if not lut_status['initialized']:
+        print("[WARN] LUT not initialized yet, returning None")
+        return None
+    
+    try:
+        from physics.lut_cache import load_lut, IRRADIANCE_GRID, TEMPERATURE_GRID, SHADING_GRID, CURRENT_GRID
+        
+        if not os.path.exists(LUT_CACHE_FILE):
+            print("[WARN] LUT cache not found")
+            return None
+        
+        # Load LUT from cache
+        lut_data = load_lut(LUT_CACHE_FILE)
+        
+        # Flatten the 4D voltage LUT for JSON serialization
+        voltage_lut_flat = lut_data['voltage_lut'].flatten().tolist()
+        
+        lut_export = {
+            'irradiance': IRRADIANCE_GRID.tolist(),
+            'temperature': TEMPERATURE_GRID.tolist(),
+            'shading': SHADING_GRID.tolist(),
+            'current': CURRENT_GRID.tolist(),
+            'voltage_lut': voltage_lut_flat,
+            'shape': lut_data['voltage_lut'].shape,
+        }
+        
+        print(f"[OK] LUT exported to client store ({len(voltage_lut_flat)} points)")
+        return lut_export
+        
+    except Exception as e:
+        print(f"[ERROR] LUT export failed: {e}")
+        return None
 
 
 # ============================================================================

@@ -119,7 +119,44 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
                 // If still not available, fetch from API (async)
                 if (!globalInterpolator) {
                     console.log("[FETCH] Attempting to load LUT from API...");
-                    fetchLUTFromAPI(); // Start loading in background
+                    
+                    // Start loading in background
+                    fetchLUTFromAPI().then(() => {
+                        // Add a small delay to ensure the interpolator is fully ready
+                        setTimeout(() => {
+                            if (globalInterpolator) {
+                                console.log("[OK] LUT ready, triggering page refresh...");
+                                // Trigger a small input change to re-run the callback
+                                // We'll use the irradiance slider to re-trigger the callback
+                                const irradianceSlider = document.getElementById('irradiance-slider');
+                                console.log("[DEBUG] Irradiance slider element:", irradianceSlider);
+                                
+                                if (irradianceSlider) {
+                                    console.log("[OK] Triggering irradiance slider change event...");
+                                    // Get the current value and set it again to trigger the callback
+                                    const currentValue = irradianceSlider.value;
+                                    const newValue = currentValue === '1000' ? '999' : '1000';
+                                    
+                                    // Trigger the change
+                                    irradianceSlider.value = newValue;
+                                    irradianceSlider.dispatchEvent(new Event('input', { bubbles: true }));
+                                    irradianceSlider.dispatchEvent(new Event('change', { bubbles: true }));
+                                    
+                                    // Reset to original value after a small delay
+                                    setTimeout(() => {
+                                        irradianceSlider.value = currentValue;
+                                        irradianceSlider.dispatchEvent(new Event('input', { bubbles: true }));
+                                        irradianceSlider.dispatchEvent(new Event('change', { bubbles: true }));
+                                        console.log("[OK] Slider reset to original value");
+                                    }, 200);
+                                } else {
+                                    console.error("[ERROR] Irradiance slider element not found!");
+                                }
+                            } else {
+                                console.error("[ERROR] globalInterpolator still null after LUT load!");
+                            }
+                        }, 200); // Wait 200ms to ensure interpolator is fully initialized
+                    });
                     
                     // Return loading state while fetching
                     return [
