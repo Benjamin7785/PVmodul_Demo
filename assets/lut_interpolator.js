@@ -327,44 +327,43 @@ class ClientSideModule {
 /**
  * Convert shading scenario to cell configuration
  */
-function applyShadingScenario(scenarioId, intensity, interpolator, irradiance, temperature) {
+function applyShadingScenario(scenarioId, intensity, interpolator, irradiance, temperature, scenariosData) {
     // Default: 3 strings × 36 cells = 108 total cells
     const cellsPerString = 36;
     const numStrings = 3;
+    
+    // Find scenario definition from scenariosData
+    let scenarioPattern = null;
+    if (scenariosData && scenariosData.scenarios) {
+        const scenario = scenariosData.scenarios.find(s => s.id === scenarioId);
+        if (scenario) {
+            scenarioPattern = scenario.shading_pattern;
+            console.log(`[SCENARIO] Applying scenario "${scenario.name}" (${scenarioId})`);
+        }
+    }
     
     // Create cells for each string
     const strings = [];
     
     for (let s = 0; s < numStrings; s++) {
         const cells = [];
+        const stringKey = `string_${s}`;
         
         for (let c = 0; c < cellsPerString; c++) {
             let shadingFactor = 0.0;
             
             // Apply shading based on scenario
-            // Handle 'none' scenario explicitly (no shading)
             if (scenarioId === 'none' || !scenarioId) {
                 // No shading - all cells fully illuminated
                 shadingFactor = 0.0;
-            } else if (scenarioId === 'single_cell') {
-                // Shade one cell in first string
-                if (s === 0 && c === 17) shadingFactor = intensity;
-            } else if (scenarioId === 'partial_string') {
-                // Shade bottom third of first string
-                if (s === 0 && c >= 24) shadingFactor = intensity;
-            } else if (scenarioId === 'full_string') {
-                // Shade entire first string
-                if (s === 0) shadingFactor = intensity;
-            } else if (scenarioId === 'diagonal') {
-                // Diagonal shading pattern
-                const cellRow = Math.floor(c / 2); // 18 rows
-                const cellCol = (c % 2) + s * 2; // 6 columns
-                if (cellRow >= cellCol * 3) shadingFactor = intensity;
-            } else if (scenarioId === 'mixed') {
-                // Mixed shading
-                if (s === 0 && c >= 18) shadingFactor = intensity;
-                if (s === 1 && c >= 27) shadingFactor = intensity * 0.5;
+            } else if (scenarioPattern) {
+                // Use scenario pattern from JSON data
+                const shadedCells = scenarioPattern[stringKey] || [];
+                if (shadedCells.includes(c)) {
+                    shadingFactor = intensity;
+                }
             }
+            // If scenario not found, no shading is applied (shadingFactor = 0.0)
             
             const cell = new ClientSideCell(irradiance, temperature, shadingFactor, interpolator);
             cells.push(cell);

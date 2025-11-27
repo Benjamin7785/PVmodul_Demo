@@ -147,6 +147,9 @@ app.layout = html.Div([
     # Store for LUT data (populated by server-side callback on page load)
     dcc.Store(id='lut-data-export', data=None),
     
+    # Store for scenario data (populated on page load)
+    dcc.Store(id='scenarios-data', data=None),
+    
     # Interval to trigger LUT export (runs once after page load)
     dcc.Interval(id='lut-export-trigger', interval=500, n_intervals=0, max_intervals=1),
     
@@ -272,6 +275,23 @@ def export_lut_to_client(n):
     except Exception as e:
         print(f"[ERROR] LUT export failed: {e}")
         return None
+
+
+# Scenarios export callback (populates store for client-side callbacks)
+@app.callback(
+    Output('scenarios-data', 'data'),
+    Input('lut-export-trigger', 'n_intervals'),
+    prevent_initial_call=False
+)
+def export_scenarios_to_client(n):
+    """
+    Export scenario definitions to client via dcc.Store
+    This triggers once after page load
+    """
+    from utils import load_scenarios
+    scenarios_data = load_scenarios()
+    print(f"[EXPORT] Exporting {len(scenarios_data.get('scenarios', []))} scenarios to client")
+    return scenarios_data
 
 
 # ============================================================================
@@ -409,10 +429,10 @@ def update_scenario_description(scenario_id):
 # Uses JavaScript LUT interpolation for instant updates
 app.clientside_callback(
     """
-    function(scenario_id, irradiance, temperature, shading_percent, display_options, lutData) {
-        // Use LUT data from dcc.Store (populated by server-side callback)
+    function(scenario_id, irradiance, temperature, shading_percent, display_options, lutData, scenariosData) {
+        // Use LUT and scenarios data from dcc.Store (populated by server-side callbacks)
         return window.dash_clientside.clientside.update_voltage_distribution(
-            scenario_id, irradiance, temperature, shading_percent, display_options, lutData
+            scenario_id, irradiance, temperature, shading_percent, display_options, lutData, scenariosData
         );
     }
     """,
@@ -427,7 +447,8 @@ app.clientside_callback(
      Input('temperature-slider', 'value'),
      Input('shading-intensity-slider', 'value'),
      Input('voltage-display-options', 'value'),
-     Input('lut-data-export', 'data')]  # LUT data from server-side callback
+     Input('lut-data-export', 'data'),  # LUT data from server-side callback
+     Input('scenarios-data', 'data')]   # Scenarios data from server-side callback
 )
 
 # SERVER-SIDE FALLBACK (commented out, kept for reference)

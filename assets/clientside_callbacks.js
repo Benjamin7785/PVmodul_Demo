@@ -105,7 +105,8 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
             temperature,
             shading_percent,
             display_options,
-            lutData
+            lutData,
+            scenariosData
         ) {
             console.time('[PERF] Client-side update');
             
@@ -179,7 +180,8 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
                 shadingIntensity,
                 globalInterpolator,
                 irradiance,
-                temperature
+                temperature,
+                scenariosData
             );
             
             // Find MPP (fast!)
