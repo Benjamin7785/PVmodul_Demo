@@ -147,36 +147,29 @@ app.layout = html.Div([
     # Store LUT data for client-side interpolation (loaded once on startup)
     dcc.Store(id='lut-data-store', storage_type='memory'),
     
-    # Trigger for LUT loading - increased interval and max_intervals for reliability
-    dcc.Interval(id='lut-load-trigger', interval=1000, n_intervals=0, max_intervals=10),
-    
     navbar,
     html.Div(id='page-content')
 ])
 
 
 # LUT Export Callback (sends LUT to client once on page load)
+# OPTION A: Trigger on URL change instead of Interval
 @app.callback(
     Output('lut-data-store', 'data'),
-    Input('lut-load-trigger', 'n_intervals')
+    Input('url', 'pathname')
 )
-def export_lut_to_client(n):
+def export_lut_to_client(pathname):
     """
     Export LUT to client browser for client-side interpolation.
-    This callback fires once on page load.
+    This callback fires on every page load/navigation.
     
     Returns flattened LUT data as JSON (~5-10 MB).
     """
-    print(f"[DEBUG] export_lut_to_client called with n={n}, lut_initialized={lut_status['initialized']}")
+    print(f"[DEBUG] export_lut_to_client called with pathname={pathname}, lut_initialized={lut_status['initialized']}")
     
     # Only export once the LUT is initialized
     if not lut_status['initialized']:
         print("[DEBUG] LUT not yet initialized, returning None")
-        return None
-    
-    # Only export when interval fires (n > 0)
-    if n is None or n == 0:
-        print("[DEBUG] Waiting for interval trigger...")
         return None
     
     try:
