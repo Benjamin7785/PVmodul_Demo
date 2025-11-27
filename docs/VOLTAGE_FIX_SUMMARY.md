@@ -334,3 +334,4 @@ I_max = min(Isc_values)  # Nimmt den SCHLECHTESTEN String (Series-Limit!)
 *PV-Modul Verschattungs-Visualisierung v0.2 - Spannungs-Korrektur*  
 *Genauigkeit: 98.6% ✅✅✅*
 
+

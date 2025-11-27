@@ -301,3 +301,4 @@ python app.py
 *Implemented: November 2025*  
 *PV Module Shading Visualization v0.3 - LUT Edition*
 
+

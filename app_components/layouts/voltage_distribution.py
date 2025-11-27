@@ -34,7 +34,7 @@ def create_voltage_distribution_layout():
                             "0% = volle Sonne | 50% = halbe Bedeckung | 100% = vollständig verschattet"
                         ], className="text-muted d-block mb-2"),
                         dcc.Slider(
-                            id='operating-current-slider',  # Keep ID for compatibility
+                            id='shading-intensity-slider',
                             min=0,
                             max=100,  # Verschattungsgrad in %
                             step=5,

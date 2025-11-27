@@ -378,3 +378,4 @@ class SemiconductorPhysics:
             'temp_coefficient': np.mean(np.gradient(Vbr_values, temps))  # V/°C
         }
 
+

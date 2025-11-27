@@ -403,3 +403,4 @@ Das Projekt analysiert und visualisiert die Konzepte aus:
 
 **🌞⚡ Viel Erfolg mit der PV Modul Verschattungs-Visualisierung! ⚡🌞**
 
+

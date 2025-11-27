@@ -232,3 +232,4 @@ python performance_test.py
 
 **STARTEN SIE JETZT MIT SCHRITT 1-3! Die App wird sofort 15x schneller!** ⚡⚡⚡
 
+

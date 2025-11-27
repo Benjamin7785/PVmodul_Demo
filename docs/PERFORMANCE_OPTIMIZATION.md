@@ -399,3 +399,4 @@ iv_data = module.iv_curve(points=100)      # 100 Punkte
 *Implementiert: November 2025*  
 *PV-Modul Verschattungs-Visualisierung v0.2 - Performance Edition*
 
+

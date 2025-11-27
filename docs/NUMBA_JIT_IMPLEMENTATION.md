@@ -481,3 +481,4 @@ Custom JIT Bisection:    ~0.01-0.02 s
 *PV-Modul Verschattungs-Visualisierung v0.2 - Numba Edition*  
 *Performance: EXCELLENT ⚡⚡⚡*
 
+

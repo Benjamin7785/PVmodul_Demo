@@ -224,3 +224,4 @@ Alle Tests bestanden:
 **Implementiert**: November 2025  
 **PV-Modul Verschattungs-Visualisierung v0.2**
 
+

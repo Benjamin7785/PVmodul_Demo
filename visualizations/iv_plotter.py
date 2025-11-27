@@ -315,3 +315,4 @@ def plot_cell_iv_with_breakdown(cell, v_range=(-15, 1), title="Zellkennlinie mit
     
     return fig
 
+

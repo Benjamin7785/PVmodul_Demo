@@ -371,3 +371,4 @@ NEXT: Phase 2 - WebGL heatmaps for 60 FPS rendering
 - [WebGL Performance Guide](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial)
 - [Plotly.js API](https://plotly.com/javascript/)
 
+

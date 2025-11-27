@@ -409,10 +409,10 @@ def update_scenario_description(scenario_id):
 # Uses JavaScript LUT interpolation for instant updates
 app.clientside_callback(
     """
-    function(scenario_id, irradiance, temperature, shading_percent, display_options) {
-        // LUT will be fetched via API instead of dcc.Store
+    function(scenario_id, irradiance, temperature, shading_percent, display_options, lutData) {
+        // Use LUT data from dcc.Store (populated by server-side callback)
         return window.dash_clientside.clientside.update_voltage_distribution(
-            scenario_id, irradiance, temperature, shading_percent, display_options, null
+            scenario_id, irradiance, temperature, shading_percent, display_options, lutData
         );
     }
     """,
@@ -425,9 +425,9 @@ app.clientside_callback(
     [Input('scenario-dropdown', 'value'),
      Input('irradiance-slider', 'value'),
      Input('temperature-slider', 'value'),
-     Input('operating-current-slider', 'value'),
-     Input('voltage-display-options', 'value')]
-    # NOTE: No State('lut-data-store', 'data') - LUT is now fetched from /api/lut
+     Input('shading-intensity-slider', 'value'),
+     Input('voltage-display-options', 'value'),
+     Input('lut-data-export', 'data')]  # LUT data from server-side callback
 )
 
 # SERVER-SIDE FALLBACK (commented out, kept for reference)

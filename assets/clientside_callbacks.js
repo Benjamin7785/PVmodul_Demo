@@ -197,8 +197,10 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
             for (const string of module.strings) {
                 for (const cell of string.cells) {
                     const voltage = cell.findVoltage(current);
-                    const power = Math.abs(voltage * current);
-                    cellVoltages.push(voltage);
+                    // FIX: Handle NaN/Infinity from LUT interpolation
+                    const safeVoltage = isNaN(voltage) || !isFinite(voltage) ? 0 : voltage;
+                    const power = Math.abs(safeVoltage * current);
+                    cellVoltages.push(safeVoltage);
                     cellPowers.push(power);
                     cellShading.push(cell.shadingFactor);
                 }
@@ -499,6 +501,11 @@ function formatHotspotInfo(hotspots) {
  * Format operating point info
  */
 function formatOperatingPointInfo(moduleState, current, mpp) {
+    // FIX: Handle NaN values gracefully
+    const voltage = isNaN(moduleState.voltage) || !isFinite(moduleState.voltage) ? 0 : moduleState.voltage;
+    const power = isNaN(moduleState.power) || !isFinite(moduleState.power) ? 0 : moduleState.power;
+    const currentSafe = isNaN(current) || !isFinite(current) ? 0 : current;
+    
     return {
         props: {
             children: [
@@ -513,17 +520,17 @@ function formatOperatingPointInfo(moduleState, current, mpp) {
                     namespace: 'dash_html_components'
                 },
                 {
-                    props: {children: `Spannung: ${moduleState.voltage.toFixed(2)} V`},
+                    props: {children: `Spannung: ${voltage.toFixed(2)} V`},
                     type: 'P',
                     namespace: 'dash_html_components'
                 },
                 {
-                    props: {children: `Strom: ${current.toFixed(2)} A`},
+                    props: {children: `Strom: ${currentSafe.toFixed(2)} A`},
                     type: 'P',
                     namespace: 'dash_html_components'
                 },
                 {
-                    props: {children: `Leistung: ${moduleState.power.toFixed(1)} W`},
+                    props: {children: `Leistung: ${power.toFixed(1)} W`},
                     type: 'P',
                     namespace: 'dash_html_components'
                 },
@@ -545,6 +552,11 @@ function formatOperatingPointInfo(moduleState, current, mpp) {
 function formatShadingInfo(percent, intensity, cellShading, current, mpp) {
     const numShaded = cellShading.filter(s => s > 0.01).length;
     
+    // Handle NaN values gracefully
+    const currentSafe = isNaN(current) || !isFinite(current) ? 0 : current;
+    const mppVoltageSafe = isNaN(mpp.voltage) || !isFinite(mpp.voltage) ? 0 : mpp.voltage;
+    const mppPowerSafe = isNaN(mpp.power) || !isFinite(mpp.power) ? 0 : mpp.power;
+    
     return {
         props: {
             children: [
@@ -565,7 +577,7 @@ function formatShadingInfo(percent, intensity, cellShading, current, mpp) {
                 },
                 {
                     props: {
-                        children: `MPP: ${current.toFixed(2)} A, ${mpp.voltage.toFixed(2)} V, ${mpp.power.toFixed(1)} W`,
+                        children: `MPP: ${currentSafe.toFixed(2)} A, ${mppVoltageSafe.toFixed(2)} V, ${mppPowerSafe.toFixed(1)} W`,
                         className: 'text-muted'
                     },
                     type: 'Small',

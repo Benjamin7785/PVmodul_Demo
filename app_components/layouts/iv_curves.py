@@ -92,3 +92,4 @@ def create_iv_curves_layout():
         
     ], fluid=True)
 
+

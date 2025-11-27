@@ -178,3 +178,4 @@ Bei Problemen:
 
 **Viel Erfolg mit der PV Modul Verschattungs-Visualisierung!** 🌞⚡
 
+

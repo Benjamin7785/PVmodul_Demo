@@ -226,15 +226,18 @@ class ClientSideString {
         
         for (const cell of this.cells) {
             const cellVoltage = cell.findVoltage(current);
-            rawVoltage += cellVoltage;
+            
+            // FIX: Handle NaN/Infinity from LUT interpolation
+            const safeCellVoltage = isNaN(cellVoltage) || !isFinite(cellVoltage) ? 0 : cellVoltage;
+            rawVoltage += safeCellVoltage;
             
             // Check if cell should be bypassed
-            if (cellVoltage < this.bypassThreshold) {
+            if (safeCellVoltage < this.bypassThreshold) {
                 isBypassed = true;
                 // Bypass diode activated (Schottky: ~0.3V drop)
                 totalVoltage += 0.3;
             } else {
-                totalVoltage += cellVoltage;
+                totalVoltage += safeCellVoltage;
             }
         }
         

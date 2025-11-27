@@ -351,3 +351,4 @@ Bei 200 W/m² kann ein Modul physikalisch NICHT 13 A liefern!
 *Aktualisiert: November 2025*  
 *PV-Modul Verschattungs-Visualisierung v0.2*
 
+

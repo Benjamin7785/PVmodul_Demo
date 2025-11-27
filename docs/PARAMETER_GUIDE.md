@@ -262,3 +262,4 @@ def analyze_operating_point(module, current):
 *Letzte Aktualisierung: November 2025*  
 *Version: 0.1b mit verbesserter Parameterbenennung*
 
+

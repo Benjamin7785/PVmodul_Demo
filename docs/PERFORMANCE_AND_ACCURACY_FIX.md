@@ -198,3 +198,4 @@ if fast:
 *PV-Modul Verschattungs-Visualisierung v0.2*  
 *Status: Funktional ✅ | Performance: Akzeptabel ⚠️ | Genauigkeit: Exzellent ✅*
 
+

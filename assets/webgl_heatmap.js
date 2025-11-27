@@ -304,3 +304,4 @@ if (typeof window !== 'undefined') {
     console.log('[OK] WebGL Heatmap module loaded!');
 }
 
+

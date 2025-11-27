@@ -281,3 +281,4 @@ self.Is = self.Is_ref * temp_factor  # Is steigt mit T!
 *Implementiert: November 2025*  
 *PV Modul Verschattungs-Visualisierung v0.2*
 
+

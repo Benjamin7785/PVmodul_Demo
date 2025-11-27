@@ -269,3 +269,4 @@ Bei Fragen oder Problemen, bitte dokumentieren Sie:
 
 **Entwickelt für die interaktive Visualisierung von PV-Modul-Verschattungseffekten** 🌞⚡
 
+

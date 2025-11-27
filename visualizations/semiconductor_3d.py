@@ -398,3 +398,4 @@ def plot_depletion_width_vs_voltage(physics, V_range=None):
     
     return fig
 
+

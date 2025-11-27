@@ -414,3 +414,4 @@ Phase 2 (WebGL GPU): ✓
 - [Dash Clientside Callbacks](https://dash.plotly.com/clientside-callbacks)
 - [WebGL2 Specification](https://www.khronos.org/registry/webgl/specs/latest/2.0/)
 
+
