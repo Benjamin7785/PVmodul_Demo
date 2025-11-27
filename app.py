@@ -147,8 +147,8 @@ app.layout = html.Div([
     # Store LUT data for client-side interpolation (loaded once on startup)
     dcc.Store(id='lut-data-store', storage_type='memory'),
     
-    # Trigger for LUT loading
-    dcc.Interval(id='lut-load-trigger', interval=100, n_intervals=0, max_intervals=1),
+    # Trigger for LUT loading - increased interval and max_intervals for reliability
+    dcc.Interval(id='lut-load-trigger', interval=1000, n_intervals=0, max_intervals=10),
     
     navbar,
     html.Div(id='page-content')
@@ -167,7 +167,16 @@ def export_lut_to_client(n):
     
     Returns flattened LUT data as JSON (~5-10 MB).
     """
+    print(f"[DEBUG] export_lut_to_client called with n={n}, lut_initialized={lut_status['initialized']}")
+    
+    # Only export once the LUT is initialized
     if not lut_status['initialized']:
+        print("[DEBUG] LUT not yet initialized, returning None")
+        return None
+    
+    # Only export when interval fires (n > 0)
+    if n is None or n == 0:
+        print("[DEBUG] Waiting for interval trigger...")
         return None
     
     try:
