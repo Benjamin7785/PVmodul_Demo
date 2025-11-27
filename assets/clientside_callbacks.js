@@ -9,6 +9,40 @@
 
 // Global interpolator instance (initialized when LUT data is loaded)
 let globalInterpolator = null;
+let lutLoadingPromise = null; // Track if we're already loading
+
+// OPTION B: Fetch LUT from Flask API endpoint
+async function fetchLUTFromAPI() {
+    if (lutLoadingPromise) {
+        return lutLoadingPromise; // Already loading, return existing promise
+    }
+    
+    console.log("[API] Fetching LUT from /api/lut...");
+    lutLoadingPromise = fetch('/api/lut')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(lutData => {
+            console.log("[API] LUT data received, initializing interpolator...");
+            if (initializeInterpolator(lutData)) {
+                console.log("[OK] LUT loaded successfully from API!");
+                return true;
+            } else {
+                console.error("[ERROR] Failed to initialize interpolator");
+                return false;
+            }
+        })
+        .catch(error => {
+            console.error("[ERROR] Failed to fetch LUT from API:", error);
+            lutLoadingPromise = null; // Reset so we can retry
+            return false;
+        });
+    
+    return lutLoadingPromise;
+}
 
 // Initialize interpolator when LUT data is available
 function initializeInterpolator(lutData) {
@@ -75,22 +109,28 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
         ) {
             console.time('[PERF] Client-side update');
             
-            // Initialize interpolator on first call
-            if (!globalInterpolator && lutData) {
-                initializeInterpolator(lutData);
-            }
-            
+            // OPTION B: Try to fetch LUT from API if not available
             if (!globalInterpolator) {
-                // Fallback: return empty figures (server will handle it)
-                console.warn("[WARN] LUT not available, cannot perform client-side update");
-                return [
-                    {data: [], layout: {title: 'Loading LUT...'}},
-                    {data: [], layout: {title: 'Loading LUT...'}},
-                    {data: [], layout: {title: 'Loading LUT...'}},
-                    'Loading...',
-                    'Loading...',
-                    'Loading...'
-                ];
+                // Try to initialize from dcc.Store first (if available)
+                if (lutData && !globalInterpolator) {
+                    initializeInterpolator(lutData);
+                }
+                
+                // If still not available, fetch from API (async)
+                if (!globalInterpolator) {
+                    console.log("[FETCH] Attempting to load LUT from API...");
+                    fetchLUTFromAPI(); // Start loading in background
+                    
+                    // Return loading state while fetching
+                    return [
+                        {data: [], layout: {title: 'Loading LUT from API...'}},
+                        {data: [], layout: {title: 'Loading LUT from API...'}},
+                        {data: [], layout: {title: 'Loading LUT from API...'}},
+                        'Loading LUT...',
+                        'Loading...',
+                        'Loading...'
+                    ];
+                }
             }
             
             // Convert shading percent to factor

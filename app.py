@@ -144,50 +144,47 @@ navbar = dbc.NavbarSimple(
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
     
-    # Store LUT data for client-side interpolation (loaded once on startup)
-    dcc.Store(id='lut-data-store', storage_type='memory'),
+    # NOTE: LUT data is now fetched via Flask API (/api/lut) instead of dcc.Store
+    # This avoids Dash callback circular dependencies and improves reliability
     
     navbar,
     html.Div(id='page-content')
 ])
 
 
-# LUT Export Callback (sends LUT to client once on page load)
-# OPTION A: Trigger on URL change instead of Interval
-@app.callback(
-    Output('lut-data-store', 'data'),
-    Input('url', 'pathname')
-)
-def export_lut_to_client(pathname):
+# ============================================================================
+# OPTION B: Flask API Endpoint for LUT Download
+# ============================================================================
+
+@app.server.route('/api/lut')
+def api_get_lut():
     """
-    Export LUT to client browser for client-side interpolation.
-    This callback fires on every page load/navigation.
+    Flask API endpoint for LUT download
+    Direct HTTP endpoint bypasses Dash callback limitations
     
-    Returns flattened LUT data as JSON (~5-10 MB).
+    Returns JSON with LUT data (~2-5 MB)
     """
-    print(f"[DEBUG] export_lut_to_client called with pathname={pathname}, lut_initialized={lut_status['initialized']}")
+    print("[API] /api/lut endpoint called")
     
-    # Only export once the LUT is initialized
     if not lut_status['initialized']:
-        print("[DEBUG] LUT not yet initialized, returning None")
-        return None
+        print("[API] LUT not initialized yet")
+        return {'error': 'LUT not initialized'}, 503
     
     try:
-        # Load LUT from cache
         from physics.lut_cache import load_lut, IRRADIANCE_GRID, TEMPERATURE_GRID, SHADING_GRID, CURRENT_GRID
+        from flask import jsonify
         
         if not os.path.exists(LUT_CACHE_FILE):
-            print("[WARN] LUT cache not found, client-side mode unavailable")
-            return None
+            print("[API] LUT cache not found")
+            return {'error': 'LUT cache not found'}, 404
         
-        lut_data = load_lut(LUT_CACHE_FILE)  # FIX: load_lut() returns only one value
+        lut_data = load_lut(LUT_CACHE_FILE)
         
-        # Flatten 4D voltage array to 1D for JSON serialization
-        # JavaScript will reconstruct the 4D structure
+        # Flatten 4D voltage array
         voltage_lut_flat = lut_data['voltage_lut'].flatten().tolist()
         
-        print(f"[LUT] Exporting {len(voltage_lut_flat)} LUT values to browser...")
-        print(f"[LUT] Estimated transfer size: {len(voltage_lut_flat) * 4 / (1024*1024):.1f} MB")
+        print(f"[API] Exporting {len(voltage_lut_flat)} LUT values...")
+        print(f"[API] Transfer size: {len(voltage_lut_flat) * 4 / (1024*1024):.1f} MB")
         
         lut_export = {
             'irradiance': IRRADIANCE_GRID.tolist(),
@@ -195,15 +192,15 @@ def export_lut_to_client(pathname):
             'shading': SHADING_GRID.tolist(),
             'current': CURRENT_GRID.tolist(),
             'voltage_lut': voltage_lut_flat,
-            'shape': lut_data['voltage_lut'].shape,  # For reconstruction in JS
+            'shape': lut_data['voltage_lut'].shape,
         }
         
-        print("[OK] LUT export complete!")
-        return lut_export
+        print("[OK] LUT export via API complete!")
+        return jsonify(lut_export)
         
     except Exception as e:
-        print(f"[ERROR] Failed to export LUT: {e}")
-        return None
+        print(f"[ERROR] API LUT export failed: {e}")
+        return {'error': str(e)}, 500
 
 
 # Routing callback
